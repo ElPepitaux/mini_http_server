@@ -7,45 +7,46 @@
 
 #include "server.h"
 
-bool create_connection(int port)
+void My_strlen_server(server_t *server, char *buffer)
 {
-    int s = socket(AF_INET, SOCK_STREAM, 0);
-    struct sockaddr_in peer_adress;
-    peer_adress.sin_addr.s_addr = INADDR_ANY;
-    peer_adress.sin_family = AF_INET;
-    peer_adress.sin_port = htons(port);
-    int opt = 1;
-    int peer_adress_len = sizeof(peer_adress);
-    if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) < 0) {
-        perror("SETSOCKET FAILED\n");
-        exit(84);
-    }
-    if (bind(s, (struct sockaddr*)&peer_adress, sizeof(peer_adress)) < 0) {
-        perror("FAILED TO BIND\n");
-        exit(84);
-    }
-    printf("Listening on port %d.\n", port);
-    if (listen(s, SOMAXCONN) == -1) {
-        perror("FAILED TO LISTEN\n");
-        exit(84);
-    }
-    if ((accept(s, (struct sockaddr*)&peer_adress, (socklen_t *)&peer_adress_len)) < 0) {
-        perror("CONNECTION FAILED\n");
-        exit(84);
-    }
-    printf("Client connected ! IP: %s Port: %d\n", inet_ntoa(peer_adress.sin_addr), ntohs(peer_adress.sin_port));
-    return 0;
+    char *str = NULL;
+    int len = 0;
+
+    printf("Data received: \"%s\"\n", buffer);
+    len = snprintf(str, 0, "The length of \"%s\" is %d", buffer, (int)strlen(buffer));
+    str = malloc(sizeof(char) * (len + 1));
+    sprintf(str, "The length of \"%s\" is %d", buffer, (int)strlen(buffer));
+    sendHeader(server, str, "application/octet-stream");
+    free(str);
+}
+
+void process(server_t *server)
+{
+    char buffer[1024] = {0};
+    char *request = NULL;
+    char cpy[1024] = {0};
+    if (read(server->clients->socket, buffer, 1024) <= 0)
+        return;
+    printf("|%s|\n", buffer);
+    strcpy(cpy, buffer);
+    request = strtok(cpy, " ");
+    if (strcmp(request, "GET") == 0 || strcmp(request, "HEAD") == 0)
+        getFile(server, buffer);
+    else
+        My_strlen_server(server, buffer);
 }
 
 int main(int ac, char **av)
 {
-    int port = 0;
+    server_t server;
     if (ac != 2)
         return 84;
-    port = atoi(av[1]);
-    if (port == 0)
+    server.port = atoi(av[1]);
+    if (server.port == 0)
         return 84;
-    if (create_connection(port))
+    if (create_connection(&server))
         return 84;
+    process(&server);
+    destroy_server(&server);
     return 0;
 }
