@@ -1,6 +1,15 @@
 {
     "files.associations": {
         "sstream": "c",
-        "server.h": "c"
+        "server.h": "c",
+        "stat.h": "c",
+        "list.h": "c",
+        "stdio.h": "c",
+        "stdarg.h": "c",
+        "stdbool.h": "c",
+        "socket.h": "c",
+        "pthread.h": "c",
+        "complex": "c",
+        "format": "c"
     }
 }

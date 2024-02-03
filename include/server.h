@@ -18,7 +18,10 @@
 #include <arpa/inet.h>
 #include <stdbool.h>
 #include <fcntl.h>
+#include <pthread.h>
 #include <sys/stat.h>
+#include "list.h"
+#include <sys/time.h>
 
 typedef struct client_s {
     int socket;
@@ -29,12 +32,17 @@ typedef struct server_s {
     struct sockaddr_in addr;
     int socket;
     int port;
-    client_t *clients;
+    list_t *clients;
 } server_t;
 
-void sendHeader(server_t *server, const char *content, const char *type);
-void getFile(server_t *server, char *buffer);
-bool create_connection(server_t *server);
+extern char **environ;
+
+void *create_client(va_list *ap);
+void destroy_client(void *data);
+server_t *create_server(int port);
+void sendHeader(client_t *client, const char *content, const char *type);
+void getMethode(client_t *client, char *buffer);
+void *create_connection(server_t *server);
 void destroy_server(server_t *server);
 
 #endif /* !SERVER_H_ */
