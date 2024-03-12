@@ -21,6 +21,9 @@ LDFLAGS = -L./ -lmy
 all: mlib $(OBJ)
 	gcc -o $(NAME) $(OBJ) $(CFLAGS) $(LDFLAGS)
 
+tests_run: mlib $(OBJ)
+	gcc -o $(NAME) $(OBJ) $(CFLAGS) $(LDFLAGS)
+
 mlib:
 	make -C lib/
 
